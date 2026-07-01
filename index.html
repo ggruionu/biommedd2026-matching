@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioMedD 2026 - Collaboration Matching</title>
+<style>
+:root{--bg:#F0F4FF;--bg2:#E0E8F8;--navy:#0A1F5C;--blue:#1A4BAF;--gold:#C9920A;--teal:#0E7C7B;--ink:#0D0D2B;--muted:#4A5580;--white:#FFFFFF;--shadow:0 2px 16px rgba(10,31,92,0.10);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:Georgia,serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+header{background:var(--navy);color:var(--white);padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap;}
+.logo{width:44px;height:44px;border-radius:8px;background:var(--gold);display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:.75rem;flex-shrink:0;font-family:Arial,sans-serif;text-align:center;line-height:1.2;color:var(--navy);}
+header h1{font-size:.95rem;font-weight:normal;}
+header h1 strong{display:block;font-size:1.15rem;}
+.pills{display:flex;margin-left:auto;gap:2px;}
+.pill{padding:.35rem .9rem;font-family:Arial,sans-serif;font-size:.75rem;color:rgba(255,255,255,.45);border-radius:20px;transition:all .2s;}
+.pill.active{background:var(--gold);color:var(--navy);font-weight:bold;}
+.pill.done{color:rgba(255,255,255,.8);}
+.container{max-width:840px;margin:0 auto;padding:2rem 1.5rem;}
+.panel{display:none;animation:fadeUp .35s ease;}
+.panel.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.eyebrow{font-family:Arial,sans-serif;font-size:.73rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem;}
+.section-title{font-size:1.65rem;font-weight:normal;margin-bottom:.3rem;}
+.section-sub{font-size:.92rem;color:var(--muted);font-family:Arial,sans-serif;margin-bottom:1.4rem;}
+.step-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:1.4rem;}
+.step-card{background:var(--white);border-radius:10px;padding:1rem 1.1rem;box-shadow:var(--shadow);display:flex;gap:.75rem;align-items:flex-start;}
+.step-num{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:.85rem;color:white;flex-shrink:0;font-family:Arial,sans-serif;}
+.step-card h3{font-size:.88rem;margin-bottom:.2rem;}
+.step-card p{font-size:.8rem;color:var(--muted);font-family:Arial,sans-serif;line-height:1.4;}
+.form-box{background:var(--white);border-radius:14px;padding:1.6rem;box-shadow:var(--shadow);}
+.field{margin-bottom:1.2rem;}
+.field label{display:block;font-family:Arial,sans-serif;font-size:.78rem;font-weight:bold;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.4rem;}
+.field label span{font-weight:normal;text-transform:none;letter-spacing:0;font-size:.78rem;}
+input[type=text]{width:100%;padding:.65rem .85rem;border:1.5px solid #C8D4E8;border-radius:8px;font-size:.93rem;font-family:Arial,sans-serif;background:var(--white);color:var(--ink);outline:none;transition:border-color .2s;}
+input:focus{border-color:var(--blue);}
+.kw-area{border:1.5px solid #C8D4E8;border-radius:8px;background:var(--white);padding:.5rem;min-height:50px;display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;cursor:text;transition:border-color .2s;}
+.kw-area:focus-within{border-color:var(--blue);}
+.kw-tag{background:var(--navy);color:white;border-radius:20px;padding:.2rem .65rem .2rem .8rem;font-size:.8rem;display:flex;align-items:center;gap:.35rem;font-family:Arial,sans-serif;}
+.kw-tag button{background:none;border:none;color:rgba(255,255,255,.7);cursor:pointer;font-size:1rem;padding:0;line-height:1;}
+.kw-input{border:none;outline:none;font-size:.88rem;font-family:Arial,sans-serif;flex:1;min-width:110px;background:transparent;padding:.15rem;}
+.kw-hint{font-size:.76rem;color:var(--muted);margin-top:.35rem;font-family:Arial,sans-serif;}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:.45rem;}
+.res-chip{display:flex;align-items:center;gap:.45rem;background:var(--white);border:1.5px solid #C8D4E8;border-radius:8px;padding:.5rem .85rem;cursor:pointer;font-size:.86rem;font-family:Arial,sans-serif;transition:all .18s;user-select:none;}
+.res-chip .dot{width:13px;height:13px;border-radius:50%;border:2px solid #C8D4E8;flex-shrink:0;transition:all .18s;}
+.res-chip.on{border-color:var(--gold);background:#FFFBF0;color:#8B6500;font-weight:bold;}
+.res-chip.on .dot{background:var(--gold);border-color:var(--gold);}
+.btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:9px;padding:.8rem 1.8rem;font-size:.95rem;font-family:Arial,sans-serif;cursor:pointer;font-weight:bold;transition:all .18s;}
+.btn-primary{background:var(--navy);color:white;}
+.btn-primary:hover{background:var(--blue);}
+.btn-secondary{background:transparent;color:var(--navy);border:1.5px solid var(--navy);padding:.7rem 1.4rem;font-weight:normal;}
+.btn-secondary:hover{background:var(--bg2);}
+.error-box{background:#FFF0ED;border:1.5px solid #F4C4B8;border-radius:8px;padding:.75rem 1rem;font-family:Arial,sans-serif;font-size:.86rem;color:#8B2500;margin-top:.8rem;display:none;}
+#loadingPanel{text-align:center;padding:3rem 1rem;}
+.spinner{width:48px;height:48px;border:5px solid var(--bg2);border-top-color:var(--navy);border-radius:50%;animation:spin .85s linear infinite;margin:0 auto 1.5rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.load-steps{list-style:none;text-align:left;display:inline-block;margin-top:.8rem;}
+.load-steps li{padding:.3rem 0;font-family:Arial,sans-serif;font-size:.88rem;color:var(--muted);display:flex;align-items:center;gap:.6rem;}
+.load-steps li .d{width:9px;height:9px;border-radius:50%;background:#C8D4E8;flex-shrink:0;}
+.load-steps li.done .d{background:var(--teal);}
+.load-steps li.cur .d{background:var(--navy);animation:pulse .65s infinite alternate;}
+@keyframes pulse{from{opacity:.35;}to{opacity:1;}}
+.result-header{background:var(--navy);color:white;border-radius:12px;padding:1.2rem 1.4rem;margin-bottom:1.3rem;display:flex;gap:1rem;align-items:center;}
+.result-header h2{font-size:1.2rem;}
+.result-header p{font-size:.85rem;opacity:.8;font-family:Arial,sans-serif;margin-top:.15rem;}
+.match-card{background:var(--white);border-radius:12px;box-shadow:var(--shadow);margin-bottom:.9rem;overflow:hidden;border:2px solid transparent;transition:border-color .2s;}
+.match-card:hover{border-color:var(--gold);}
+.mc-head{padding:1rem 1.2rem .6rem;display:flex;justify-content:space-between;align-items:flex-start;gap:.8rem;}
+.mc-rank{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:.95rem;color:white;flex-shrink:0;font-family:Arial,sans-serif;}
+.mc-name{font-size:1rem;font-weight:bold;}
+.mc-affil{font-size:.8rem;color:var(--muted);font-family:Arial,sans-serif;margin-top:.1rem;}
+.score-badge{background:var(--bg2);border-radius:20px;padding:.2rem .7rem;font-size:.8rem;font-family:Arial,sans-serif;color:var(--navy);font-weight:bold;white-space:nowrap;}
+.mc-body{padding:0 1.2rem 1rem;}
+.rationale{background:var(--bg);border-left:3px solid var(--gold);padding:.6rem .85rem;border-radius:0 7px 7px 0;font-size:.87rem;font-family:Arial,sans-serif;line-height:1.5;margin-bottom:.65rem;}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem;}
+.chip{background:var(--bg2);border-radius:20px;padding:.18rem .6rem;font-size:.75rem;font-family:Arial,sans-serif;color:var(--muted);}
+.chip.shared{background:#E0F0EF;color:var(--teal);font-weight:bold;}
+.next-box{background:var(--bg2);border-radius:12px;padding:1.1rem 1.4rem;margin-top:1.3rem;}
+.next-box h3{font-size:.95rem;color:var(--navy);margin-bottom:.5rem;}
+.next-box ul{list-style:none;}
+.next-box li{font-family:Arial,sans-serif;font-size:.86rem;padding:.25rem 0;display:flex;gap:.5rem;}
+.next-box li::before{content:"to";color:var(--gold);font-weight:bold;flex-shrink:0;}
+.admin-tabs{display:flex;border-bottom:2px solid var(--bg2);margin-bottom:1.3rem;}
+.atab{padding:.6rem 1.2rem;font-family:Arial,sans-serif;font-size:.86rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;color:var(--muted);transition:all .15s;}
+.atab.active{color:var(--navy);border-bottom-color:var(--navy);font-weight:bold;}
+table{width:100%;border-collapse:collapse;font-family:Arial,sans-serif;font-size:.82rem;}
+th{background:var(--navy);color:white;padding:.55rem .75rem;text-align:left;}
+td{padding:.5rem .75rem;border-bottom:1px solid var(--bg2);vertical-align:top;}
+tr:nth-child(even) td{background:var(--bg);}
+.stat-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem;}
+.stat-card{background:var(--white);border-radius:10px;padding:.9rem 1.2rem;box-shadow:var(--shadow);text-align:center;min-width:110px;}
+.stat-num{font-size:2rem;font-weight:bold;color:var(--navy);font-family:Arial,sans-serif;}
+.stat-lbl{font-size:.78rem;color:var(--muted);font-family:Arial,sans-serif;}
+.info-box{background:var(--white);border-radius:12px;padding:1.4rem;box-shadow:var(--shadow);font-family:Arial,sans-serif;line-height:1.7;font-size:.9rem;}
+.info-box h3{color:var(--navy);margin-bottom:.6rem;font-size:1rem;}
+.info-box ol{padding-left:1.3rem;}
+.info-box li{margin-bottom:.4rem;}
+.info-box code{background:var(--bg2);padding:.1rem .4rem;border-radius:4px;font-size:.82rem;}
+@media(max-width:600px){.step-grid{grid-template-columns:1fr;}.res-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">BioMedD<br>2026</div>
+  <div>
+    <h1><strong>Scientific Collaboration Matching</strong>
+    BioMedD 2026 &middot; Brasov, Romania &middot; July 2&ndash;4, 2026</h1>
+  </div>
+  <div class="pills">
+    <div class="pill active" id="p0">1 &middot; Submit</div>
+    <div class="pill" id="p1">2 &middot; Matching</div>
+    <div class="pill" id="p2">3 &middot; Results</div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- PANEL 0: FORM -->
+<div class="panel active" id="panel0">
+  <div class="eyebrow">11th International Conference on Biomaterials, Tissue Engineering &amp; Medical Devices</div>
+  <h2 class="section-title">Enter your research profile</h2>
+  <p class="section-sub">The AI matches you with participants whose expertise complements yours &mdash; filling your gaps, not duplicating your work. Your submission is private.</p>
+  <div class="step-grid">
+    <div class="step-card">
+      <div class="step-num" style="background:var(--navy)">1</div>
+      <div><h3>Now &middot; Submit</h3><p>Fill this form. Takes 2 minutes. Only the organizer sees submissions.</p></div>
+    </div>
+    <div class="step-card">
+      <div class="step-num" style="background:var(--gold)">2</div>
+      <div><h3>Break &middot; Analysis</h3><p>AI maps complementarity across all speakers plus everyone who submitted.</p></div>
+    </div>
+    <div class="step-card">
+      <div class="step-num" style="background:var(--teal)">3</div>
+      <div><h3>Post-Break &middot; Matches</h3><p>You receive your top 3 matches with a scientific rationale for each pairing.</p></div>
+    </div>
+    <div class="step-card">
+      <div class="step-num" style="background:#7B6B5A">4</div>
+      <div><h3>Gala Dinner &middot; July 3</h3><p>Results announced: did structured matching beat random contact?</p></div>
+    </div>
+  </div>
+  <div class="form-box">
+    <div class="field">
+      <label>Your name <span>&middot; as listed in the program</span></label>
+      <input id="fName" type="text" placeholder="e.g. Maria Ionescu">
+    </div>
+    <div class="field">
+      <label>Institution &amp; country</label>
+      <input id="fAffil" type="text" placeholder="e.g. POLITEHNICA Bucharest, Romania">
+    </div>
+    <div class="field">
+      <label>Research keywords <span>&middot; type a keyword and press Enter &mdash; add 3 to 5</span></label>
+      <div class="kw-area" id="kwArea" onclick="document.getElementById('kwIn').focus()">
+        <input class="kw-input" id="kwIn" placeholder="Add keyword..." maxlength="50">
+      </div>
+      <div class="kw-hint" id="kwHint">0 of 5 keywords added</div>
+    </div>
+    <div class="field">
+      <label>Most needed resource <span>&middot; what would most accelerate your research?</span></label>
+      <div class="res-grid">
+        <div class="res-chip" onclick="toggleRes(this,'Clinical collaboration')"><span class="dot"></span>Clinical collaboration</div>
+        <div class="res-chip" onclick="toggleRes(this,'In vivo / animal model access')"><span class="dot"></span>In vivo / animal model access</div>
+        <div class="res-chip" onclick="toggleRes(this,'Characterization / imaging equipment')"><span class="dot"></span>Characterization / imaging equipment</div>
+        <div class="res-chip" onclick="toggleRes(this,'Funding / grant partner')"><span class="dot"></span>Funding / grant partner</div>
+        <div class="res-chip" onclick="toggleRes(this,'Industry / translation partner')"><span class="dot"></span>Industry / translation partner</div>
+        <div class="res-chip" onclick="toggleRes(this,'AI / computational expertise')"><span class="dot"></span>AI / computational expertise</div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Ideal collaboration &mdash; one sentence <span>&middot; optional</span></label>
+      <input id="fNote" type="text" placeholder="e.g. I want a clinician partner for in vivo validation of my scaffold">
+    </div>
+    <div class="error-box" id="formErr"></div>
+    <div style="margin-top:1.3rem;display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="submitForm()">Find my matches &rarr;</button>
+      <span style="font-family:Arial,sans-serif;font-size:.8rem;color:var(--muted)">Results ready at the next coffee break</span>
+    </div>
+  </div>
+</div>
+
+<!-- PANEL 1: LOADING -->
+<div class="panel" id="panel1">
+  <div id="loadingPanel">
+    <div class="spinner"></div>
+    <h2 style="font-size:1.35rem;margin-bottom:.4rem">Mapping the room...</h2>
+    <p style="font-family:Arial,sans-serif;color:var(--muted);font-size:.88rem">Computing complementarity across BioMedD 2026 participants</p>
+    <ul class="load-steps">
+      <li id="ls0"><span class="d"></span>Saving your profile</li>
+      <li id="ls1"><span class="d"></span>Loading participant pool</li>
+      <li id="ls2"><span class="d"></span>Computing complementarity scores</li>
+      <li id="ls3"><span class="d"></span>Generating match rationales</li>
+    </ul>
+  </div>
+</div>
+
+<!-- PANEL 2: RESULTS -->
+<div class="panel" id="panel2">
+  <div class="result-header">
+    <div style="font-size:2rem">&#128300;</div>
+    <div>
+      <h2>Your top matches</h2>
+      <p id="resSubhead">Based on complementarity scoring across BioMedD 2026 participants</p>
+    </div>
+  </div>
+  <div id="matchContainer"></div>
+  <div class="next-box">
+    <h3>Choose one action with each match before the end of the conference</h3>
+    <ul>
+      <li><strong>Specific Aims Page</strong> &mdash; draft a 1-page NIH/ERC-style aims document together in one session</li>
+      <li><strong>Funding Map</strong> &mdash; identify 3&ndash;5 open calls where your pair is competitive</li>
+      <li><strong>30-Day Challenge</strong> &mdash; one small verifiable task completed jointly within 30 days</li>
+      <li><strong>Coffee &amp; Common Ground</strong> &mdash; a structured 30-min first meeting with a clear decision point</li>
+      <li><strong>Joint Paper Outline</strong> &mdash; a shared abstract or review paper outline with author list</li>
+    </ul>
+  </div>
+  <div style="margin-top:1.2rem;display:flex;gap:.75rem;flex-wrap:wrap;">
+    <button class="btn btn-secondary" onclick="goBack()">&#8592; New submission</button>
+    <button class="btn btn-primary" onclick="copyResults()">Copy my matches</button>
+  </div>
+</div>
+
+<!-- PANEL 3: ADMIN -->
+<div class="panel" id="panelAdmin">
+  <div class="eyebrow">Organizer view &mdash; private</div>
+  <h2 class="section-title" style="margin-bottom:1rem">BioMedD 2026 Submissions</h2>
+  <div class="stat-row" id="statRow"></div>
+  <div class="admin-tabs">
+    <div class="atab active" onclick="showTab('tabSub')">All submissions</div>
+    <div class="atab" onclick="showTab('tabMatch')">Run full matching</div>
+    <div class="atab" onclick="showTab('tabExport')">Export CSV</div>
+    <div class="atab" onclick="showTab('tabSetup')">Setup guide</div>
+  </div>
+  <div id="tabSub">
+    <table><thead><tr><th>#</th><th>Name</th><th>Affiliation</th><th>Keywords</th><th>Resource needed</th><th>Note</th></tr></thead>
+    <tbody id="adminBody"></tbody></table>
+  </div>
+  <div id="tabMatch" style="display:none">
+    <p style="font-family:Arial,sans-serif;margin-bottom:1rem;color:var(--muted)">Computes complementarity for every pair of real submissions.</p>
+    <button class="btn btn-primary" onclick="runFullMatch()">Run full matching analysis</button>
+    <div id="fullMatchOut" style="margin-top:1.2rem"></div>
+  </div>
+  <div id="tabExport" style="display:none">
+    <p style="font-family:Arial,sans-serif;margin-bottom:1rem;color:var(--muted)">Download all submissions as CSV.</p>
+    <button class="btn btn-primary" onclick="exportCSV()">Download CSV</button>
+  </div>
+  <div id="tabSetup" style="display:none">
+    <div class="info-box">
+      <h3>Morning-of-conference setup (2 minutes)</h3>
+      <ol>
+        <li>Go to <strong>dropbox.com/developers/apps</strong> and click your Dropbox app.</li>
+        <li>Click the <strong>Settings</strong> tab. Under OAuth 2 click <strong>Generate</strong>. Copy the token.</li>
+        <li>Go to your GitHub repo and click <strong>index.html</strong>.</li>
+        <li>Click the pencil icon. Press Ctrl+F, search for <code>YOUR_TOKEN_HERE</code>.</li>
+        <li>Replace <code>YOUR_TOKEN_HERE</code> with the token (keep the single quotes).</li>
+        <li>Click <strong>Commit changes</strong>. Wait 60 seconds then check admin.</li>
+      </ol>
+      <p style="margin-top:.8rem;color:var(--muted)">Token lasts 4 hours. Regenerate if needed between sessions.</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+// =============================================================================
+// CONFIGURATION — replace YOUR_TOKEN_HERE on the morning of July 2nd
+// dropbox.com/developers/apps -> your app -> Settings -> Generate access token
+// =============================================================================
+const DROPBOX_TOKEN = 'YOUR_TOKEN_HERE';
+
+function isConfigured() { return DROPBOX_TOKEN !== 'YOUR_TOKEN_HERE'; }
+async function getToken() { return DROPBOX_TOKEN; }
+
+// =============================================================================
+// DROPBOX API
+// =============================================================================
+async function dbxUpload(path, data) {
+  if (!isConfigured()) return;
+  const r = await fetch('https://content.dropboxapi.com/2/files/upload', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + await getToken(),
+      'Dropbox-API-Arg': JSON.stringify({ path, mode: 'overwrite' }),
+      'Content-Type': 'application/octet-stream'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+async function dbxDownload(path) {
+  const r = await fetch('https://content.dropboxapi.com/2/files/download', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + await getToken(), 'Dropbox-API-Arg': JSON.stringify({ path }) }
+  });
+  if (r.status === 409) return null;
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+async function dbxList() {
+  const r = await fetch('https://api.dropboxapi.com/2/files/list_folder', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + await getToken(), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path: '' })
+  });
+  if (r.status === 401) throw new Error('TOKEN_INVALID');
+  if (!r.ok) throw new Error('LIST_FAILED: ' + await r.text());
+  return r.json();
+}
+async function dbxTestToken() {
+  const r = await fetch('https://api.dropboxapi.com/2/users/get_current_account', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + await getToken(), 'Content-Type': 'application/json' },
+    body: 'null'
+  });
+  if (!r.ok) return null;
+  return r.json();
+}
+
+// =============================================================================
+// SPEAKER DATABASE — pre-loaded from BioMedD 2026 program
+// =============================================================================
+const SPEAKERS = [
+  // PLENARY SPEAKERS
+  {id:'b01', name:'Julietta V. Rau', affil:'Istituto di Struttura della Materia CNR, Rome, Italy',
+   keywords:['antimicrobial biomaterials','bioactive coatings','implantable solutions','hydroxyapatite','thin films'],
+   resources:['Industry / translation partner','Funding / grant partner'], day:'July 2', session:'Plenary 1'},
+
+  {id:'b02', name:'Gabriel Gruionu', affil:'Indiana University, Indianapolis, USA',
+   keywords:['vascularized biomaterials','computational network models','microvascular self-assembly','AI clinical translation','tissue engineering'],
+   resources:['Funding / grant partner','Clinical collaboration'], day:'July 2', session:'Plenary 1'},
+
+  {id:'b03', name:'Ciprian Iliescu', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['microfluidics','gene therapy','lab-on-chip','MEMS','biomedical microsystems'],
+   resources:['Industry / translation partner','Clinical collaboration'], day:'July 2', session:'Plenary 1'},
+
+  {id:'b04', name:'Gultekin Goller', affil:'Istanbul Technical University, Turkey',
+   keywords:['pharmaceutical biomaterials','plant-based capsules','sustainable drug delivery','ceramic materials','spark plasma sintering'],
+   resources:['Industry / translation partner','Funding / grant partner'], day:'July 2', session:'Plenary 2'},
+
+  {id:'b05', name:'Mircea Alexandru Mateescu', affil:'Universite du Quebec a Montreal, Canada',
+   keywords:['polyvinylalcohol materials','self-assembled biomaterials','drug delivery','biomedical polymers','controlled release'],
+   resources:['Clinical collaboration','Funding / grant partner'], day:'July 2', session:'Plenary 2'},
+
+  {id:'b06', name:'Mihnea Costoiu', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['deep-tech infrastructure','macroeconomic resilience','engineering policy','academic innovation','technology transfer'],
+   resources:['Funding / grant partner','Industry / translation partner'], day:'July 2', session:'Plenary 2'},
+
+  {id:'b07', name:'Horia Iovu', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['3D bioprinting','biomedical devices','biomimetic tissues','breast phantoms','additive manufacturing'],
+   resources:['Clinical collaboration','Industry / translation partner'], day:'July 3', session:'Plenary 3'},
+
+  {id:'b08', name:'Mihaela Stefan', affil:'University of Texas at Dallas, USA',
+   keywords:['polycaprolactone copolymers','anticancer drug delivery','amphiphilic polymers','cancer therapy','nanocarriers'],
+   resources:['Clinical collaboration','Funding / grant partner'], day:'July 3', session:'Plenary 3'},
+
+  // KEYNOTE SPEAKERS — Biomaterials in Orthopedics
+  {id:'b09', name:'Razvan Ene', affil:'Carol Davila University of Medicine and Pharmacy, Bucharest, Romania',
+   keywords:['calcium sulphate','antibiotic carrier','osteomyelitis','septic arthritis','biodegradable biomaterials'],
+   resources:['Clinical collaboration','In vivo / animal model access'], day:'July 2', session:'Orthopedics'},
+
+  {id:'b10', name:'Razvan Adam', affil:'Clinical University Emergency Hospital Elias, Bucharest, Romania',
+   keywords:['hip resurfacing arthroplasty','cementation','microscopy','implant failure','BHR implants'],
+   resources:['Characterization / imaging equipment','Clinical collaboration'], day:'July 2', session:'Orthopedics'},
+
+  // KEYNOTE SPEAKERS — Advanced Technologies
+  {id:'b11', name:'Horatiu Miclea', affil:'UMF Carol Davila Bucharest, Romania',
+   keywords:['connectome theory','virtual reality therapy','psychiatric rehabilitation','exposure therapy','neuroscience'],
+   resources:['AI / computational expertise','Funding / grant partner'], day:'July 2', session:'Advanced Technologies'},
+
+  {id:'b12', name:'Lucian Gheorghe Gruionu', affil:'University of Craiova, Romania',
+   keywords:['AI bone defect segmentation','implant planning','biomechanical loading','open-source AI','computational workflow'],
+   resources:['Clinical collaboration','AI / computational expertise'], day:'July 2', session:'Advanced Technologies'},
+
+  {id:'b13', name:'Nele Pien', affil:'Ghent University, Belgium',
+   keywords:['light-activated biomaterials','modular platforms','3D biofabrication','photocrosslinking','regenerative medicine'],
+   resources:['Funding / grant partner','Industry / translation partner'], day:'July 2', session:'Advanced Technologies'},
+
+  {id:'b14', name:'Catalin Popa', affil:'Technical University of Cluj-Napoca, Romania',
+   keywords:['microfluidics diagnostics','therapy systems','point-of-care','biosensors','miniaturized devices'],
+   resources:['Industry / translation partner','Clinical collaboration'], day:'July 2', session:'Advanced Technologies'},
+
+  {id:'b15', name:'Florin Miculescu', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['3D printed implants','antibacterial coatings','bone reconstruction','additive manufacturing','mechanical performance'],
+   resources:['Characterization / imaging equipment','Clinical collaboration'], day:'July 2', session:'Advanced Technologies'},
+
+  {id:'b16', name:'Cosmin Cotrut', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['surface engineering','osseointegration','multifunctional coatings','titanium implants','electrochemical deposition'],
+   resources:['Characterization / imaging equipment','Industry / translation partner'], day:'July 2', session:'Advanced Technologies'},
+
+  // KEYNOTE SPEAKERS — Biodegradable Metals
+  {id:'b17', name:'Corneliu Munteanu', affil:'Gheorghe Asachi Technical University of Iasi, Romania',
+   keywords:['magnesium alloys','biodegradable metals','Ca Sr Zn alloying','biomedical implants','corrosion properties'],
+   resources:['In vivo / animal model access','Characterization / imaging equipment'], day:'July 3', session:'Biodegradable Metals'},
+
+  {id:'b18', name:'Marian Miculescu', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['magnesium alloys','corrosion','mechanical properties','fracture behavior','biodegradable metals'],
+   resources:['Characterization / imaging equipment','Funding / grant partner'], day:'July 3', session:'Biodegradable Metals'},
+
+  {id:'b19', name:'Brandusa Ghiban', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['zinc alloys','biodegradation','surface conditions','bioresorbable metals','in vitro testing'],
+   resources:['Characterization / imaging equipment','In vivo / animal model access'], day:'July 3', session:'Biodegradable Metals'},
+
+  {id:'b20', name:'Nicanor Cimpoesu', affil:'Gheorghe Asachi Technical University of Iasi, Romania',
+   keywords:['zinc-based alloys','electrochemical corrosion','biodegradable implants','medical alloys','surface analysis'],
+   resources:['Characterization / imaging equipment','Industry / translation partner'], day:'July 3', session:'Biodegradable Metals'},
+
+  // KEYNOTE SPEAKERS — Dental Biomaterials
+  {id:'b21', name:'Horia Octavian Manolea', affil:'University of Medicine and Pharmacy Craiova, Romania',
+   keywords:['AI in dentistry','dental research','machine learning diagnostics','caries detection','digital dentistry'],
+   resources:['AI / computational expertise','Clinical collaboration'], day:'July 3', session:'Dental Biomaterials'},
+
+  {id:'b22', name:'Marius Manole', affil:'Iuliu Hatieganu University Cluj-Napoca, Romania',
+   keywords:['digital prosthodontics','implant dentistry','CAD/CAM','conventional vs digital workflows','accuracy'],
+   resources:['Clinical collaboration','Industry / translation partner'], day:'July 3', session:'Dental Biomaterials'},
+
+  {id:'b23', name:'Kamel Earar', affil:'Dunarea de Jos University of Galati, Romania',
+   keywords:['ceramic biomaterials','dental prosthetics','clinical applications','zirconia','porcelain'],
+   resources:['Clinical collaboration','Funding / grant partner'], day:'July 3', session:'Dental Biomaterials'},
+
+  // KEYNOTE SPEAKERS — Clinical Applications
+  {id:'b24', name:'Sebastian Gradinaru', affil:'Titu Maiorescu University, Bucharest, Romania',
+   keywords:['multidisciplinary biomaterials','orthopedic surgery','hernia repair','mesh implants','case report'],
+   resources:['Clinical collaboration','Industry / translation partner'], day:'July 3', session:'Clinical Applications'},
+
+  {id:'b25', name:'Stefan Voicu', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['hemodialysis membranes','porous polymeric films','artificial kidney','membrane science','green polymers'],
+   resources:['Clinical collaboration','Industry / translation partner'], day:'July 3', session:'Clinical Applications'},
+
+  {id:'b26', name:'Iuliana Biru', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['hydrogels','self-healing materials','strain-sensing','multifunctional polymers','biomedical applications'],
+   resources:['Industry / translation partner','Funding / grant partner'], day:'July 3', session:'Clinical Applications'},
+
+  {id:'b27', name:'Oana Dobre', affil:'University of Glasgow, United Kingdom',
+   keywords:['electrospun scaffolds','vascular grafts','bypass surgery','PHBV','small-diameter vessels'],
+   resources:['In vivo / animal model access','Funding / grant partner'], day:'July 3', session:'Clinical Applications'},
+
+  {id:'b28', name:'Paul-Dan Sirbu', affil:'Grigore T. Popa University of Medicine and Pharmacy, Iasi, Romania',
+   keywords:['polyaxial angular stable plate','acetabular revision arthroplasty','biomechanical fixation','osteotomy','implant design'],
+   resources:['Clinical collaboration','Characterization / imaging equipment'], day:'July 3', session:'Clinical Applications'},
+
+  {id:'b29', name:'Aurel-George Mohan', affil:'University of Oradea, Romania',
+   keywords:['cranioplasty','traumatic brain injury','cranial repair','neurosurgery implants','patient-specific implants'],
+   resources:['Clinical collaboration','Industry / translation partner'], day:'July 3', session:'Clinical Applications'},
+
+  // KEYNOTE SPEAKERS — Biomaterials in Healthcare
+  {id:'b30', name:'Vicentiu Saceleanu', affil:'Lucian Blaga University of Sibiu, Romania',
+   keywords:['3D reconstruction','neurosurgical training','surgical simulation','anatomical models','medical education'],
+   resources:['Clinical collaboration','AI / computational expertise'], day:'July 4', session:'Biomaterials Healthcare'},
+
+  {id:'b31', name:'Marioara Moldovan', affil:'Babes Bolyai University, Cluj-Napoca, Romania',
+   keywords:['smart hydrogels','oral healthcare','photodynamic therapy','antibacterial','drug release'],
+   resources:['Clinical collaboration','In vivo / animal model access'], day:'July 4', session:'Biomaterials Healthcare'},
+
+  // ORAL PRESENTERS (selected key ones)
+  {id:'b32', name:'Cosmin-Ioan Mohor', affil:'Lucian Blaga University of Sibiu, Romania',
+   keywords:['tendon adhesion','phalangeal fracture','bioresorbable plates','intramedullary fixation','orthopedic biomechanics'],
+   resources:['Clinical collaboration','In vivo / animal model access'], day:'July 2', session:'Orthopedics'},
+
+  {id:'b33', name:'Razvan Nicusor Peta', affil:'University of Medicine and Pharmacy Craiova, Romania',
+   keywords:['additive manufacturing orthopedics','bioprinting','AI-assisted regenerative medicine','future surgery','2035 vision'],
+   resources:['AI / computational expertise','Industry / translation partner'], day:'July 2', session:'Orthopedics'},
+
+  {id:'b34', name:'Larisa Cojocaru', affil:'Victor Babes UMP Timisoara, Romania',
+   keywords:['laser photobiomodulation','temporomandibular disorder','clinical protocol','dental therapy','pain management'],
+   resources:['Clinical collaboration','Characterization / imaging equipment'], day:'July 3', session:'Dental Biomaterials'},
+
+  {id:'b35', name:'Horia Iovu', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['3D bioprinting','tissue engineering scaffolds','bioink','biomimetic constructs','organ printing'],
+   resources:['Industry / translation partner','Clinical collaboration'], day:'July 3', session:'Plenary 3'},
+
+  {id:'b36', name:'Madalina Oprea', affil:'POLITEHNICA Bucharest, Romania',
+   keywords:['polysaccharide membranes','biomineralization','implantology','composite membranes','bone regeneration'],
+   resources:['In vivo / animal model access','Characterization / imaging equipment'], day:'July 3', session:'Clinical Applications'},
+
+  {id:'b37', name:'Iulian Antoniac', affil:'POLITEHNICA Bucharest / Academy of Romanian Scientists, Romania',
+   keywords:['biomaterials','implants','magnesium alloys','antibiotic delivery','surface coatings'],
+   resources:['Clinical collaboration','Industry / translation partner'], day:'July 2-4', session:'Chair / Committee'},
+
+  {id:'b38', name:'Daniel Munteanu', affil:'Transilvania University of Brasov, Romania',
+   keywords:['biomedical engineering','conference organization','materials science','tissue engineering'],
+   resources:['Funding / grant partner','Industry / translation partner'], day:'July 2-4', session:'Chair / Committee'},
+
+  {id:'b39', name:'Mohammad Asif Gawhari', affil:'Punjabi University, Patiala, India',
+   keywords:['silymarin','milk thistle','anticancer properties','antimicrobial','phytochemistry'],
+   resources:['In vivo / animal model access','Clinical collaboration'], day:'July 4', session:'Biomaterials Healthcare'},
+
+  {id:'b40', name:'Petrica Vizureanu', affil:'Gheorghe Asachi Technical University of Iasi, Romania',
+   keywords:['selective laser melting','titanium alloys','biomedical fabrication','SLM characterization','metallic biomaterials'],
+   resources:['Characterization / imaging equipment','Industry / translation partner'], day:'July 4 / Poster', session:'Poster'}
+];
+
+// =============================================================================
+// STATE
+// =============================================================================
+let keywords = [], resources = [], currentUser = null, currentMatches = [], adminSubs = [];
+
+window.addEventListener('hashchange', route);
+function route() {
+  if (window.location.hash === '#admin') { showPanel('panelAdmin'); loadAdmin(); }
+}
+route();
+
+// =============================================================================
+// KEYWORD INPUT
+// =============================================================================
+const kwIn = document.getElementById('kwIn');
+kwIn.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ',') && kwIn.value.trim()) {
+    e.preventDefault(); addKw(kwIn.value.replace(/,/g,'').trim());
+  } else if (e.key === 'Backspace' && !kwIn.value && keywords.length) {
+    removeKw(keywords.length - 1);
+  }
+});
+kwIn.addEventListener('blur', () => { if (kwIn.value.trim()) addKw(kwIn.value.trim()); });
+function addKw(kw) {
+  kw = kw.replace(/,/g,'').trim().toLowerCase();
+  if (!kw || keywords.length >= 5 || keywords.includes(kw)) return;
+  keywords.push(kw); renderKw();
+}
+function removeKw(i) { keywords.splice(i,1); renderKw(); }
+function renderKw() {
+  document.querySelectorAll('.kw-tag').forEach(t => t.remove());
+  keywords.forEach((kw, i) => {
+    const t = document.createElement('div'); t.className = 'kw-tag';
+    t.innerHTML = kw + ' <button onclick="removeKw(' + i + ')">x</button>';
+    document.getElementById('kwArea').insertBefore(t, kwIn);
+  });
+  kwIn.placeholder = keywords.length >= 5 ? '' : 'Add keyword...';
+  document.getElementById('kwHint').textContent = keywords.length + ' of 5 keywords' + (keywords.length < 3 ? ' - add at least 3' : ' ok');
+}
+function toggleRes(el, val) {
+  el.classList.toggle('on');
+  resources = el.classList.contains('on') ? [...resources, val] : resources.filter(r => r !== val);
+}
+
+// =============================================================================
+// FORM SUBMIT
+// =============================================================================
+async function submitForm() {
+  const name = document.getElementById('fName').value.trim();
+  const affil = document.getElementById('fAffil').value.trim();
+  const note = document.getElementById('fNote').value.trim();
+  const err = document.getElementById('formErr');
+  err.style.display = 'none';
+  if (!name) return showErr('Please enter your name.');
+  if (keywords.length < 3) return showErr('Please add at least 3 keywords.');
+  if (!resources.length) return showErr('Please select at least one needed resource.');
+  currentUser = { id: 'sub_' + Date.now(), name, affil, keywords: [...keywords], resources: [...resources], note, timestamp: new Date().toISOString(), type: 'submission' };
+  showPanel('panel1'); updatePills(1);
+  await runPipeline();
+}
+function showErr(msg) { const e = document.getElementById('formErr'); e.textContent = msg; e.style.display = 'block'; }
+
+// =============================================================================
+// PIPELINE
+// =============================================================================
+async function runPipeline() {
+  const ids = ['ls0','ls1','ls2','ls3'];
+  let pool = [...SPEAKERS];
+  setStep(ids, 0);
+  try { await dbxUpload('/' + currentUser.id + '.json', currentUser); } catch(e) {}
+  await sleep(700);
+  setStep(ids, 1);
+  try {
+    if (isConfigured()) {
+      const listing = await dbxList();
+      const others = listing.entries.filter(e => e['.tag'] === 'file' && e.name.endsWith('.json') && !e.name.includes(currentUser.id));
+      for (const entry of others.slice(0, 60)) {
+        try { const s = await dbxDownload(entry.path_lower); if (s && s.name && s.keywords) pool.push(s); } catch(e) {}
+      }
+    }
+  } catch(e) {}
+  await sleep(700);
+  setStep(ids, 2); await sleep(900);
+  setStep(ids, 3);
+  const matchPool = pool.filter(p => p.name.toLowerCase() !== currentUser.name.toLowerCase());
+  try { currentMatches = await callClaude(currentUser, matchPool); }
+  catch(e) { currentMatches = localScore(currentUser, matchPool).slice(0,3).map((m,i) => ({...m, rank: i+1})); }
+  ids.forEach(id => { document.getElementById(id).classList.remove('cur'); document.getElementById(id).classList.add('done'); });
+  await sleep(400); showResults();
+}
+function setStep(ids, i) {
+  ids.forEach((id, j) => {
+    const el = document.getElementById(id);
+    el.classList.remove('cur','done');
+    if (j < i) el.classList.add('done');
+    if (j === i) el.classList.add('cur');
+  });
+}
+
+// =============================================================================
+// CLAUDE API
+// =============================================================================
+async function callClaude(user, pool) {
+  const preRanked = localScore(user, pool).slice(0, 20);
+  const poolText = preRanked.map((p,i) => (i+1) + '. ' + p.name + ' (' + (p.affil||'') + (p.session ? ', ' + p.session : '') + ')\n   Keywords: ' + (p.keywords||[]).join(', ') + '\n   Needs: ' + (p.resources||[]).join(', ')).join('\n\n');
+  const prompt = 'You are a scientific collaboration matching engine for BioMedD 2026 (11th International Conference on Biomaterials, Tissue Engineering and Medical Devices), Brasov, Romania, July 2-4 2026.\n\nParticipant:\nNAME: ' + user.name + '\nAFFILIATION: ' + (user.affil||'BioMedD participant') + '\nKEYWORDS: ' + user.keywords.join(', ') + '\nNEEDED RESOURCE: ' + user.resources.join(', ') + '\nNOTE: ' + (user.note||'none') + '\n\nPool (pre-ranked by relevance):\n' + poolText + '\n\nSelect TOP 3 matches by COMPLEMENTARITY - people who fill each others gaps, not who work identically. Consider both scientific overlap and resource complementarity. Return ONLY a JSON array of 3 objects each with: rank(int), name(str), affiliation(str), score(int 60-98), rationale(1-2 sentences specific to the scientific bridge between these two), theirKeywords(array), sharedThemes(array 1-3 bridging themes), suggestedProject(one of: Specific Aims Page|Funding Map|30-Day Challenge|Coffee and Common Ground|Joint Paper Outline). No markdown, no extra text.';
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+  });
+  const data = await res.json();
+  const raw = data.content.map(b => b.text||'').join('').replace(/```json|```/g,'').trim();
+  return JSON.parse(raw);
+}
+
+function localScore(user, pool) {
+  return pool.map(p => {
+    const ukw = (user.keywords||[]).map(k => k.toLowerCase());
+    const pkw = (p.keywords||[]).map(k => k.toLowerCase());
+    const ov = ukw.filter(k => pkw.some(pk => pk.includes(k) || k.includes(pk))).length;
+    const rc = (p.resources||[]).some(r => !(user.resources||[]).includes(r)) ? 12 : 0;
+    const shared = ukw.filter(k => pkw.some(pk => pk.includes(k) || k.includes(pk)));
+    return { name: p.name, affil: p.affil||'', score: Math.min(94, 48 + ov*9 + rc + Math.floor(Math.random()*5)), keywords: p.keywords||[], resources: p.resources||[], theirKeywords: p.keywords||[], sharedThemes: shared.length ? shared.slice(0,3) : [(p.keywords||[''])[0]], rationale: 'Your focus on ' + (user.keywords[0]||'your area') + ' could bridge with ' + p.name + "'s work in " + (p.keywords||['their field'])[0] + ', addressing your need for ' + (user.resources||['collaboration'])[0] + '.', suggestedProject: 'Coffee and Common Ground' };
+  }).sort((a,b) => b.score - a.score);
+}
+
+// =============================================================================
+// SHOW RESULTS
+// =============================================================================
+function showResults() {
+  showPanel('panel2'); updatePills(2);
+  document.getElementById('resSubhead').textContent = 'For ' + currentUser.name + ' - matched against ' + SPEAKERS.length + ' BioMedD 2026 speakers plus live submissions';
+  const colors = ['var(--navy)','var(--gold)','var(--teal)'];
+  const container = document.getElementById('matchContainer'); container.innerHTML = '';
+  currentMatches.forEach((m, i) => {
+    const acc = colors[i] || 'var(--teal)';
+    const card = document.createElement('div'); card.className = 'match-card';
+    card.innerHTML = '<div class="mc-head"><div style="display:flex;align-items:flex-start;gap:.75rem"><div class="mc-rank" style="background:' + acc + '">' + (m.rank||i+1) + '</div><div><div class="mc-name">' + m.name + '</div><div class="mc-affil">' + (m.affiliation||m.affil||'') + '</div></div></div><div style="text-align:right"><div class="score-badge">' + m.score + '% match</div><div style="font-size:.73rem;font-family:Arial,sans-serif;color:var(--muted);margin-top:.25rem">' + (m.suggestedProject||'') + '</div></div></div><div class="mc-body"><div class="rationale">' + m.rationale + '</div><div class="chips">' + (m.sharedThemes||[]).map(t => '<span class="chip shared">+ ' + t + '</span>').join('') + (m.theirKeywords||[]).filter(k => !(m.sharedThemes||[]).includes(k)).map(k => '<span class="chip">' + k + '</span>').join('') + '</div></div>';
+    container.appendChild(card);
+  });
+}
+
+// =============================================================================
+// ADMIN
+// =============================================================================
+async function loadAdmin() {
+  const tbody = document.getElementById('adminBody');
+  tbody.innerHTML = '<tr><td colspan="6" style="font-family:Arial,sans-serif;color:var(--muted);padding:1rem">Connecting to Dropbox...</td></tr>';
+  if (!isConfigured()) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:#8B2500;font-family:Arial,sans-serif;padding:1rem"><strong>No token configured.</strong> See the Setup Guide tab.</td></tr>';
+    return;
+  }
+  try {
+    const acct = await dbxTestToken();
+    if (!acct) { tbody.innerHTML = '<tr><td colspan="6" style="color:#8B2500;font-family:Arial,sans-serif;padding:1rem"><strong>Token rejected.</strong> Generate a new one and update index.html.</td></tr>'; return; }
+    tbody.innerHTML = '<tr><td colspan="6" style="font-family:Arial,sans-serif;color:var(--muted);padding:1rem">Connected as ' + acct.email + '. Loading submissions...</td></tr>';
+    const listing = await dbxList();
+    const files = listing.entries.filter(e => e['.tag'] === 'file' && e.name.endsWith('.json'));
+    adminSubs = [];
+    for (const f of files) { try { adminSubs.push(await dbxDownload(f.path_lower)); } catch(e) {} }
+    renderAdmin(); renderStats();
+  } catch(e) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:#8B2500;font-family:Arial,sans-serif;padding:1rem"><strong>Error:</strong> ' + e.message + '</td></tr>';
+  }
+}
+function renderStats() {
+  const real = adminSubs.filter(s => s && s.type === 'submission');
+  document.getElementById('statRow').innerHTML = '<div class="stat-card"><div class="stat-num">' + real.length + '</div><div class="stat-lbl">Submissions</div></div><div class="stat-card"><div class="stat-num">' + SPEAKERS.length + '</div><div class="stat-lbl">Pre-loaded speakers</div></div><div class="stat-card"><div class="stat-num">' + (real.length + SPEAKERS.length) + '</div><div class="stat-lbl">Total pool</div></div>';
+}
+function renderAdmin() {
+  const tbody = document.getElementById('adminBody'); tbody.innerHTML = '';
+  if (!adminSubs.length) { tbody.innerHTML = '<tr><td colspan="6" style="color:var(--muted);font-style:italic;padding:1rem">No submissions yet.</td></tr>'; return; }
+  adminSubs.forEach((s,i) => { if (!s) return; const tr = document.createElement('tr'); tr.innerHTML = '<td>' + (i+1) + '</td><td>' + (s.name||'') + '</td><td>' + (s.affil||'') + '</td><td>' + (s.keywords||[]).join(', ') + '</td><td>' + (s.resources||[]).join('; ') + '</td><td>' + (s.note||'') + '</td>'; tbody.appendChild(tr); });
+}
+function showTab(id) {
+  ['tabSub','tabMatch','tabExport','tabSetup'].forEach(t => { document.getElementById(t).style.display = t === id ? '' : 'none'; });
+  document.querySelectorAll('.atab').forEach((t,i) => { t.classList.toggle('active', ['tabSub','tabMatch','tabExport','tabSetup'][i] === id); });
+  if (id === 'tabSub') renderAdmin();
+}
+async function runFullMatch() {
+  const real = adminSubs.filter(s => s && s.type === 'submission');
+  if (real.length < 2) { document.getElementById('fullMatchOut').innerHTML = '<p style="font-family:Arial,sans-serif;color:var(--muted)">Need at least 2 submissions.</p>'; return; }
+  const pairs = [];
+  for (let i = 0; i < real.length; i++) for (let j = i+1; j < real.length; j++) {
+    const a = real[i], b = real[j];
+    const ukw = (a.keywords||[]).map(k => k.toLowerCase()), pkw = (b.keywords||[]).map(k => k.toLowerCase());
+    const ov = ukw.filter(k => pkw.some(pk => pk.includes(k) || k.includes(pk))).length;
+    const rc = (a.resources||[]).some(r => !(b.resources||[]).includes(r)) ? 10 : 0;
+    const shared = ukw.filter(k => pkw.some(pk => pk.includes(k) || k.includes(pk)));
+    pairs.push({ a: a.name, b: b.name, score: Math.min(96, 42 + ov*11 + rc), shared });
+  }
+  pairs.sort((x,y) => y.score - x.score);
+  let html = '<h3 style="font-family:Arial,sans-serif;margin-bottom:.8rem">Top pairs by complementarity</h3><table><thead><tr><th>Rank</th><th>Person A</th><th>Person B</th><th>Score</th><th>Shared themes</th></tr></thead><tbody>';
+  pairs.slice(0,15).forEach((p,i) => { html += '<tr><td>' + (i+1) + '</td><td>' + p.a + '</td><td>' + p.b + '</td><td><strong>' + p.score + '%</strong></td><td>' + (p.shared.join(', ')||'-') + '</td></tr>'; });
+  document.getElementById('fullMatchOut').innerHTML = html + '</tbody></table>';
+}
+function exportCSV() {
+  let csv = 'Name,Affiliation,Keywords,Resources,Note,Timestamp\n';
+  adminSubs.forEach(s => { if (!s) return; csv += '"' + (s.name||'') + '","' + (s.affil||'') + '","' + (s.keywords||[]).join('; ') + '","' + (s.resources||[]).join('; ') + '","' + (s.note||'') + '","' + (s.timestamp||'') + '"\n'; });
+  const a = document.createElement('a'); a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv); a.download = 'BioMedD2026_submissions.csv'; a.click();
+}
+
+// =============================================================================
+// NAVIGATION
+// =============================================================================
+function showPanel(id) { document.querySelectorAll('.panel').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); window.scrollTo(0,0); }
+function updatePills(step) { ['p0','p1','p2'].forEach((id,i) => { const el = document.getElementById(id); el.classList.remove('active','done'); if (i < step) el.classList.add('done'); if (i === step) el.classList.add('active'); }); }
+function goBack() {
+  keywords = []; resources = []; currentUser = null;
+  ['fName','fAffil','fNote'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('.res-chip').forEach(c => c.classList.remove('on'));
+  document.querySelectorAll('.kw-tag').forEach(t => t.remove());
+  kwIn.value = ''; renderKw();
+  document.querySelectorAll('.load-steps li').forEach(li => li.classList.remove('cur','done'));
+  showPanel('panel0'); updatePills(0);
+}
+function copyResults() {
+  let text = 'BioMedD 2026 My Collaboration Matches\n\n';
+  currentMatches.forEach(m => { text += '#' + (m.rank||'') + ': ' + m.name + ' (' + (m.affiliation||m.affil||'') + ')\n' + m.rationale + '\nSuggested: ' + (m.suggestedProject||'') + '\n\n'; });
+  navigator.clipboard.writeText(text).then(() => { const btn = event.currentTarget; btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy my matches', 2000); });
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
